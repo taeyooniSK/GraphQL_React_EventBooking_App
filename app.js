@@ -4,10 +4,12 @@ const app = express();
 const graphqlHttp = require("express-graphql"); // this enables me to use graphql like a middleware  in express
 const { buildSchema } = require("graphql"); // buildSchema: a function that can make me build schema literally
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 // DB model
 
 const Event = require("./models/event");
+const User = require("./models/user");
 
 
 app.use(bodyParser.json()); 
@@ -25,11 +27,23 @@ app.use("/graphql", graphqlHttp({
             date: String! 
         }
 
+        type User {
+            _id : ID!
+            email: String!
+            password: String
+        }
+
         input EventInput {
             title: String!
             description: String!
             price: Float!
             date: String!
+            creator: String!
+        }
+
+        input UserInput {
+            email: String!
+            password: String!
         }
 
         type RootQuery {
@@ -38,6 +52,7 @@ app.use("/graphql", graphqlHttp({
 
         type RootMutation {
             createEvent(eventInput: EventInput): Event
+            createUser(userInput: UserInput): User
 
         }
 
@@ -63,18 +78,58 @@ app.use("/graphql", graphqlHttp({
             title: args.eventInput.title,  
             description: args.eventInput.description,
             price: +args.eventInput.price,
-            date: new Date(args.eventInput.date)
+            date: new Date(args.eventInput.date),
+            creator: "5cf37ada34fd5d2b8c31b57c" // mongoose automatically converts this string to ObjectId of mongoose
           });
-          // save event in database
-          return event.save()
-          .then(result => {
-              console.log(result);
-              return result;
-          })
-          .catch(err => {
-              console.log(err);
-              throw err;
-          })
+            let createdEvent;
+            return event.save()
+           .then(event => {
+                createdEvent = event;
+                return User.findById({_id: event.creator})
+            })
+           .then(foundUser => {
+                // when user not found
+                if(!foundUser){
+                    throw new Error("User is not found!");
+                }
+                    
+                // when user found, save event and save event in User's createdEvents field in database
+                foundUser.createdEvents.push(event);
+                return foundUser.save();
+            })
+            .then(result => {
+                return createdEvent;
+            })
+            .catch(err => {
+                if(err) throw err;
+            })
+        },
+        createUser: args => {
+                // check if the same email in DB
+            return User.findOne({email : args.userInput.email})
+            .then(foundUser => {
+                if(foundUser){
+                    throw new Error("The email already exists.");
+                }
+                // graphql waits for 'return value' so this should be returned        
+                return bcrypt.hash(args.userInput.password, 12);
+            })        
+            .then(hashedPassword => {
+                const user = new User({
+                    email : args.userInput.email,
+                    password: hashedPassword
+                });
+
+                return user.save(); // returns promise object so it should be returned as well
+            })
+            .then(result => {
+                console.log("A New user is signed up");
+                result.password = null; // retrieving password is not good for sercurity purpose so null
+                return result;
+            })
+            .catch(err => {
+                throw err;
+            })   
         }
     },  
     graphiql: true
