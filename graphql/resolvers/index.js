@@ -3,6 +3,25 @@ const bcrypt = require("bcrypt");
 
 const Event = require("../../models/event");
 const User = require("../../models/user");
+const Booking = require("../../models/booking");
+
+
+const singleEvent = async eventId => {
+    try {
+        const event = await Event.findById({_id: eventId });
+        return {
+            ...event._doc, 
+            // _id: event.id, 
+            creator: user.bind(this, event.creator)
+        }
+    } catch (err){
+        throw err;
+    }
+    
+}
+
+
+
 
 
 // const user, events make me to query more flexible way to a deeper level of queries 
@@ -24,10 +43,12 @@ const events = async eventIds => {
     
 }
 
+
 // In 'events' resolver, when event.creator value is put in as an argument, then 'user' returns data on the user including createdEvents(function) which enable me to query data on events 
 const user = async userId => {
     try {
         const user = await User.findById(userId);
+        //console.log(user._doc);
         return {
                 ...user._doc,
                 //  _id: user.id, 
@@ -50,6 +71,23 @@ module.exports = { // javascript object where all the resolver functions are in
                     creator: user.bind(this, event._doc.creator) // event._doc.creator is a creator of event so you can get data about the creator(email, password)
                 }
            })
+        } catch(err){
+            throw err;
+        }
+    },
+    bookings: async () => {
+        try {
+            const bookings = await Booking.find({});
+            return bookings.map(booking => {
+                return {
+                    ...booking._doc,
+                    user: user.bind(this, booking._doc.user),
+                    event: singleEvent.bind(this, booking._doc.event),
+                    createdAt: new Date(booking._doc.createdAt).toISOString(),
+                    updatedAt: new Date(booking._doc.updatedAt).toISOString(),
+                }
+            })
+            
         } catch(err){
             throw err;
         }
@@ -110,6 +148,38 @@ module.exports = { // javascript object where all the resolver functions are in
         } 
         return result;
         } catch(err){
+            throw err;
+        }
+    },
+    bookEvent : async args => {
+        // find the event to book and get data
+        const eventToBook = await Event.findOne({ _id: args.eventID });
+        //console.log(eventToBook);
+        const booking = new Booking({
+            user: "5cf37ada34fd5d2b8c31b57c",
+            event: eventToBook.id
+        });
+        const result = await booking.save();
+        return {
+            ...result._doc,
+            user: user.bind(this, booking.user),
+            event: singleEvent.bind(this, booking.event),
+            createdAt: new Date(result._doc.createdAt).toISOString(),
+            updatedAt: new Date(result._doc.updatedAt).toISOString()
+        }
+    },
+    cancelBooking : async args => {
+        try {
+            // get booking data populated with data referencing event
+            const booking = await Booking.findById({_id : args.bookingID}).populate("event");
+            console.log({...booking.event._doc});
+            const event = {
+                ...booking.event._doc,
+                creator: user.bind(this, booking.event._doc.creator)
+            };
+            await Booking.deleteOne({_id: args.bookingID });
+            return event;
+        } catch(err) {
             throw err;
         }
     }
