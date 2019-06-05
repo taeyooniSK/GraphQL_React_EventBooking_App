@@ -4,9 +4,11 @@ const app = express();
 const graphqlHttp = require("express-graphql"); // this enables me to use graphql like a middleware  in express
 const mongoose = require("mongoose");
 
+const isAuthenticated = require("./middleware/isAuth");
 
 const graphqlSchema = require("./graphql/schema/index");
 const graphqlResolvers = require("./graphql/resolvers/index"); 
+
 
 
 // DB model
@@ -18,7 +20,7 @@ const User = require("./models/user");
 app.use(bodyParser.json()); 
 
 
-
+app.use(isAuthenticated);
 
 // Set graphql config options : 
 app.use("/graphql", graphqlHttp({

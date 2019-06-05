@@ -21,14 +21,17 @@ module.exports = { // javascript object where all the resolver functions are in
             throw err;
         }
     },
-    createEvent : async args => { // createEvent(resolver)'s args contains all arguments put into createEvent's arguments in mutation type
-      const event = new Event({
-        title: args.eventInput.title,  
-        description: args.eventInput.description,
-        price: +args.eventInput.price,
-        date: new Date(args.eventInput.date),
-        creator: "5cf37ada34fd5d2b8c31b57c" // mongoose automatically converts this string to ObjectId of mongoose
-      });
+    createEvent : async (args, req) => { // createEvent(resolver)'s args contains all arguments put into createEvent's arguments in mutation type
+      if (!req.isAuthenticated){
+          throw new Error("It's not authenticated!");
+      }
+        const event = new Event({
+            title: args.eventInput.title,  
+            description: args.eventInput.description,
+            price: +args.eventInput.price,
+            date: new Date(args.eventInput.date),
+            creator: req.userId // user who is authenticated
+        });
         let createdEvent; // this variable is going to contain event that is created by createEvent resolver
         try {
             const result = await event.save();
