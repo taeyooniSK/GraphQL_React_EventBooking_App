@@ -19,6 +19,20 @@ const User = require("./models/user");
 
 app.use(bodyParser.json()); 
 
+// middleware for taking care of CORS : every host or client can send requests to server
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    // Allow what methods the client can use for sending requests 
+    res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
+    // Allow what headers the client set for requests
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+        // OPTIONS in req.method asks what methods can be used 
+    if(req.method === "OPTIONS"){
+        return res.sendStatus(200);
+    }
+    next();
+});
 
 app.use(isAuthenticated);
 
@@ -38,6 +52,6 @@ mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PA
     console.log(err);
 })
 
-app.listen(3000, ()=>{
-    console.log("Server is running on 3000");
+app.listen(8000, ()=>{
+    console.log("Server is running on 8000");
 })
