@@ -3,3 +3,26 @@ body {
   padding : 0;
   font-family: "Lato", sans-serif;
 }
+
+/* style for buttons */
+
+.form-actions button,
+.btn {
+  outline: none;
+  border-width: 0;
+  background: #2ABFCB;
+  padding: 0.6rem 1.2rem;
+  margin-right: 1rem;
+  font: inherit;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 5px;
+  box-shadow: 1px 1px 5px rgba(0,0,0,0.23);
+}
+.form-actions button:hover,
+.form-actions button:active,
+.btn:hover,
+.bth:active {
+  background-color:#4694B4;
+}

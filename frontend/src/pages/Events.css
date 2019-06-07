@@ -1,0 +1,13 @@
+.events-control {
+    text-align: center;
+    border: 1px solid #2ABFCB;
+    padding: 3rem;
+    margin: 2rem auto;
+    max-width: 40%;
+}
+
+@media (max-width: 768px) {
+    .events-control {
+        max-width: 50%;
+    }
+}

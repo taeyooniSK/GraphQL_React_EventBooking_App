@@ -26,21 +26,39 @@
     font-size: 1.5rem;
 }
 
-.main-navigation__item ul {
+.main-navigation__items ul {
     display: flex;
     align-items: center;
     padding-right: 2rem;
 }
-.main-navigation__item li {
+.main-navigation__items li {
    margin: 0 1rem;
 }
-.main-navigation__item a {
+.main-navigation__items a,
+.main-navigation__items button{
+    font: inherit;
     text-decoration: none;
+    padding: 0.23rem 0.6rem;
     color: #fff;
+    vertical-align: middle;
 }
 
-.main-navigation__item a:hover,
-.main-navigation__item a:active,
-.main-navigation__item a.active {
+.main-navigation__items button {
+    border: none;
+    font-size: 1rem;
+    outline: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+
+.main-navigation__items a:hover,
+.main-navigation__items a:active,
+.main-navigation__items a.active,
+.main-navigation__items button:hover,
+.main-navigation__items button:active{
     color: #2ABFCB;
+    background:#fff;
+    padding: 0.23rem 0.6rem;
+    border-radius: 5px;
 }
