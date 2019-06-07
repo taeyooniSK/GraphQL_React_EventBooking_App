@@ -45,7 +45,7 @@ module.exports = { // javascript object where all the resolver functions are in
             // when user found, save event and save event in User's createdEvents field in database
             creator.createdEvents.push(event);
             await creator.save();
-       
+            console.log(createdEvent);
             return createdEvent; // when querying, I can get this newly created event
         } catch(err){
             console.log(err);

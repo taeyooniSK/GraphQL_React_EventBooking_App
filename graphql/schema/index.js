@@ -39,7 +39,6 @@ input EventInput {
     description: String!
     price: Float!
     date: String!
-    creator: String
 }
 
 input UserInput {
