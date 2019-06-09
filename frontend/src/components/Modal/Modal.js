@@ -12,7 +12,7 @@ const Modal = (props) => (
         </section>
         <footer className="modal__actions">
             {props.canCancel && <button className="btn" onClick={props.handleModalCancel}>Cancel</button>}
-            {props.canConfirm && <button className="btn" onClick={props.handleModalConfirm}>Confirm</button>}
+            {props.canConfirm && <button className="btn" onClick={props.handleModalConfirm}>{props.buttonText}</button>}
         </footer>
     </div>
 );
