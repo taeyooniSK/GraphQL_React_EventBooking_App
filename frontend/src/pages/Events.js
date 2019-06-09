@@ -16,6 +16,8 @@ class EventsPage extends Component {
         selectedEvent: null
     };
 
+    isActive = true;
+
     static contextType = AuthContext;
 
     constructor(props){
@@ -141,9 +143,11 @@ class EventsPage extends Component {
             return res.json();
         }).then(result => {
             const events = result.data.events;
+             // only when this component is active, update the state
+           if(this.isActive){
             // if events list is updated when user creates a new event, override events of state
             this.setState({events, isLoading: false});
-        //    this.setState(prevState => ({ events: [...prevState.events, ...events ]}));
+           }
         }).catch(err => {
             console.log(err);
             this.setState({isLoading: true});
@@ -158,7 +162,49 @@ class EventsPage extends Component {
         })
     }   
     handleBookEvent = () => {
+        if(!this.context.token){
+            // when user is not logged in and close the modal clicking "Confirm" button, selectedEvent: null so that modal can get closed
+            this.setState({selectedEvent: null})
+            return;
+        }
+        let reqBody = {
+            query: `
+            mutation {
+              bookEvent(eventID: "${this.state.selectedEvent._id}") {
+                _id
+                createdAt 
+                updatedAt
+              }
+            }
+          `
+        };
+        // save token from context into token variable
+        const token = this.context.token;       
 
+        fetch("http://localhost:8000/graphql", {
+            method: "POST",
+            body: JSON.stringify(reqBody),
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        }).then(res => {
+            if(res.status !== 200 && res.status !== 201){
+                throw new Error("Failed");
+            }
+            return res.json();
+        }).then(result => {
+           console.log(result);
+            // after getting data, close the modal
+            this.setState({selectedEvent: null})
+        }).catch(err => {
+            console.log(err);
+        })
+    }
+
+    // this component is destroyed 
+    componentWillUnmount(){
+        this.isActive = false;
     }
 
     render() {
@@ -168,7 +214,7 @@ class EventsPage extends Component {
                 {
                  this.state.creating && <React.Fragment>
                     <BackgroundShadow />
-                     <Modal title="Add Event" canCancel canConfirm handleModalCancel={this.handleModalCancel} handleModalConfirm={this.handleBookEvent} buttonText="Confirm">
+                     <Modal title="Add Event" canCancel canConfirm handleModalCancel={this.handleModalCancel} handleModalConfirm={this.handleModalConfirm} buttonText="Confirm">
                         <p>This is Modal content</p>
                         <form>
                             <div className="form-control">
@@ -191,7 +237,7 @@ class EventsPage extends Component {
                     </Modal>
                    </React.Fragment>
                 }
-                {this.state.selectedEvent && <Modal title={this.state.selectedEvent.title} canCancel canConfirm handleModalCancel={this.handleModalCancel} handleModalConfirm={this.handleModalConfirm} buttonText="Book">
+                {this.state.selectedEvent && <Modal title={this.state.selectedEvent.title} canCancel canConfirm handleModalCancel={this.handleModalCancel} handleModalConfirm={this.handleBookEvent} buttonText={this.context.token ? "Book" : "Confirm"}>
                     <h1>{this.state.selectedEvent.title}</h1>
                     <h2>${this.state.selectedEvent.price} - {new Date(this.state.selectedEvent.date).toLocaleString("ko-KR")}</h2>
                     <p>{this.state.selectedEvent.description}</p>
