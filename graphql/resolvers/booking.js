@@ -13,7 +13,7 @@ module.exports = { // javascript object where all the resolver functions are in
             throw new Error("It's not authenticated!");
         }
         try {
-            const bookings = await Booking.find({});
+            const bookings = await Booking.find({user: req.userId});
             return bookings.map(booking => {
                 return transformBooking(booking);
             })
